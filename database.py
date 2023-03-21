@@ -194,6 +194,7 @@ def insertIntoTableUkedag():
     con.commit()
 
 
+
 # insertIntoTableBanstrekning()
 
 # insertIntoTableStasjoner()
