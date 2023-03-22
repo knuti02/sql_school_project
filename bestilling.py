@@ -27,7 +27,7 @@ def bestilling(kundenummer):
     for stasjon in stations:
         print(stasjon)
 
-    print("\nDisse går på alle dagene i uka:\nMandag,\nTirsdag,\nOnsdag,\nTorsdag,\nFredag,\nLørdag,\nSøndag\n")
+    print("\nRutene går på alle dagene i uka:\nMandag,\nTirsdag,\nOnsdag,\nTorsdag,\nFredag,\nLørdag,\nSøndag\n")
 
     while True:
         kunde_input = input(
@@ -45,8 +45,6 @@ def bestilling(kundenummer):
             date_obj = datetime.strptime(dato, "%d/%m/%y")
             day_of_week = date_obj.strftime("%A")
             day_of_week = eng_to_nor[day_of_week]
-
-            print(day_of_week)
 
         except:
             print("Ugyldig input!")
@@ -66,7 +64,7 @@ def bestilling(kundenummer):
 
         # Finn togruter
         liste_med_togruter_fra_stasjon = retrieve_time_based_on_day(cursor, day_of_week, start_stasjon)
-        print(liste_med_togruter_fra_stasjon)
+        print(f"{start_stasjon} til {slutt_stasjon}:")
+        for tup in liste_med_togruter_fra_stasjon:
+            print(f"{tup[3]}: {tup[5]}")
 
-
-bestilling(1)

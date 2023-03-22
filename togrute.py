@@ -43,10 +43,8 @@ def retrieveTogrute(cursor, ukedag):
 
     info = cursor.fetchall()
     return info
-    # return Togrute(togrute_id)  # , navn, vognoppsett_id)
 
 
-# print(retrieveTogrute(cursor=cursor, ukedag='Mandag'))
 
 
 def retrieve_based_on_time(cursor, tidspunkt):
@@ -136,7 +134,6 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
         print(e)
         return None
     info = cursor.fetchall()
-    print(info)
     info_to_return = []
 
     for tup in info:
@@ -156,7 +153,6 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
         )
 
         temp_info = cursor.fetchone()
-        print(temp_info)
 
         if temp_info[2].split(':')[0] > tup[5]:
             correctDay = getNextDay(tup[3])
