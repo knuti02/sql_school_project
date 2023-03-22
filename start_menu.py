@@ -1,4 +1,4 @@
-from connection import create_connection
+from util import create_connection
 from kunde import Kunde, makeKunde, insertIntoTableKunde, retrieveKunde
 from bestilling import bestilling
 
