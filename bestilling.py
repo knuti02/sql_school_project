@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from connection import create_connection
+from util import create_connection
 from kunde import Kunde, makeKunde, insertIntoTableKunde
 from jernbane import Jernbane, retrieveStasjon, retrieve_all_stations
+from togrute import Togrute, retrieveTogrute, retrieve_based_on_time, retrieve_time_based_on_day
 
 con, cursor = create_connection()
 eng_to_nor = {
@@ -51,10 +52,10 @@ def bestilling(kundenummer):
             print("Ugyldig input!")
             continue
 
-        if start_stasjon.lower not in stations:
+        if start_stasjon not in stations:
             print("Ugyldig startstasjon!")
             continue
-        if slutt_stasjon.lower not in stations:
+        if slutt_stasjon not in stations:
             print("Ugyldig sluttstasjon")
             continue
 
@@ -64,6 +65,8 @@ def bestilling(kundenummer):
             continue
 
         # Finn togruter
+        liste_med_togruter_fra_stasjon = retrieve_time_based_on_day(cursor, day_of_week, start_stasjon)
+        print(liste_med_togruter_fra_stasjon)
 
 
 bestilling(1)

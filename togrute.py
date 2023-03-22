@@ -1,7 +1,7 @@
 import sqlite3
 
 # class for togrute
-from connection import create_connection
+from util import create_connection, getWeekdays
 
 
 class Togrute:
@@ -9,12 +9,12 @@ class Togrute:
         self.togrute_id = togrute_id
 
 
-con, cursor = create_connection()
-weekdays = ["Mandag", "Tirsdag", "Onsdag",
-            "Torsdag", "Fredag", "Lørdag", "Søndag"]
+
 
 
 def retrieveTogrute(cursor, ukedag):
+    weekdays = getWeekdays()
+    
     if weekdays.index(ukedag) == 6:
         ukedag2 = -1
     else:
@@ -50,6 +50,8 @@ def retrieveTogrute(cursor, ukedag):
 
 
 def retrieve_based_on_time(cursor, tidspunkt):
+    weekdays = getWeekdays()
+    
     try:
         cursor.execute(
             '''
@@ -83,10 +85,11 @@ def retrieve_based_on_time(cursor, tidspunkt):
     return info
 
 
-print(retrieve_based_on_time(cursor=cursor, tidspunkt='08:09'))
 
 
 def getNextDay(day):
+    weekdays = getWeekdays()
+    
     if weekdays.index(day) == 6:
         return weekdays[0]
     else:
@@ -95,6 +98,7 @@ def getNextDay(day):
 
 def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
     # finn neste dag også
+    weekdays = getWeekdays()
 
     if weekdays.index(ukedag) == 6:
         ukedag2 = weekdays[0]
@@ -154,7 +158,6 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
         temp_info = cursor.fetchone()
         print(temp_info)
 
-        correctDay = ""
         if temp_info[2].split(':')[0] > tup[5]:
             correctDay = getNextDay(tup[3])
         else:
@@ -164,7 +167,3 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
 
     return info_to_return
 
-
-print("Tider for begge dager:")
-print(retrieve_time_based_on_day(cursor=cursor,
-      ukedag='Søndag', stasjonNavn='Steinkjer'))
