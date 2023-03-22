@@ -153,6 +153,7 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
 
         temp_info = cursor.fetchone()
         print(temp_info)
+
         correctDay = ""
         if temp_info[2].split(':')[0] > tup[5]:
             correctDay = getNextDay(tup[3])
