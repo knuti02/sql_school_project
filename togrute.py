@@ -86,6 +86,13 @@ def retrieve_based_on_time(cursor, tidspunkt):
 print(retrieve_based_on_time(cursor=cursor, tidspunkt='08:09'))
 
 
+def getNextDay(day):
+    if weekdays.index(day) == 6:
+        return weekdays[0]
+    else:
+        return weekdays[weekdays.index(day) + 1]
+
+
 def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
     # finn neste dag også
 
@@ -95,6 +102,7 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
         ukedag2 = weekdays[weekdays.index(ukedag) + 1]
 
     try:
+        # Hent rutetider for stasjonen på gitt ukedag og etterfølgende dag
         cursor.execute(
             '''
             SELECT
@@ -106,10 +114,10 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
                 Ukedag
                 NATURAL JOIN
                 Stasjon_i_rute
-                
-            WHERE 
+
+            WHERE
                 (
-                    Navn_på_dag = ? 
+                    Navn_på_dag = ?
                     OR Navn_på_dag = ?
                 )
                 AND navn = ?
@@ -123,8 +131,8 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
     except sqlite3.Error as e:
         print(e)
         return None
-
     info = cursor.fetchall()
+    print(info)
     info_to_return = []
 
     for tup in info:
@@ -132,19 +140,26 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
             '''
             SELECT
                 *
-                
+
             FROM
                 Stasjon_i_rute
-                
+
             WHERE
                 rute_id = ?
                 AND
                 sekvensnummer = (? - 1)
-            ''', (tup[0], tup[6])
+            ''', (tup[4], tup[6])
         )
 
         temp_info = cursor.fetchone()
         print(temp_info)
+        correctDay = ""
+        if temp_info[2].split(':')[0] > tup[5]:
+            correctDay = getNextDay(tup[3])
+        else:
+            correctDay = tup[3]
+        info_to_return.append(
+            [tup[0], tup[1], tup[2], correctDay, tup[4], tup[5], tup[6]])
 
     return info_to_return
 
