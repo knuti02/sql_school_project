@@ -9,9 +9,6 @@ class Togrute:
         self.togrute_id = togrute_id
 
 
-
-
-
 def retrieveTogrute(cursor, ukedag):
     weekdays = getWeekdays()
     
@@ -43,8 +40,6 @@ def retrieveTogrute(cursor, ukedag):
 
     info = cursor.fetchall()
     return info
-
-
 
 
 def retrieve_based_on_time(cursor, tidspunkt):
@@ -81,8 +76,6 @@ def retrieve_based_on_time(cursor, tidspunkt):
 
     info = cursor.fetchall()
     return info
-
-
 
 
 def getNextDay(day):
@@ -136,7 +129,14 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
     info = cursor.fetchall()
     info_to_return = []
 
+    # Sjekke om klokka har bikket 00:00 fra forrige stasjon, da skal neste dag skrives i stadet
     for tup in info:
+        #hopp over sjekk hvis sekvensnummer er 1, og bare gi den sin dag
+        if tup[6] == 1:
+            info_to_return.append(
+            [tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], tup[6]])
+            continue
+        #Hent forrige stasjon
         cursor.execute(
             '''
             SELECT
@@ -163,3 +163,30 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
 
     return info_to_return
 
+
+def retrieveTripFromStartToFinish(cursor, startStasjon, sluttStasjon, ukedag):
+    startStasjon_info = retrieve_time_based_on_day(cursor, ukedag, startStasjon)
+    print(startStasjon_info)
+    cursor.execute(
+            '''
+            SELECT
+                *
+
+            FROM
+                Stasjon_i_rute
+                JOIN
+                Stasjon
+
+            WHERE
+                rute_id = ?
+                AND
+                navn = ?
+            ''', (startStasjon_info[0][4], sluttStasjon) # startStasjon_info[0][4] er ruteID som skal være lik for alle i den lista
+        )
+
+    pass
+
+
+cursor = create_connection()[1]
+print(retrieveTripFromStartToFinish(cursor, "Trondheim", "Bodø", "Mandag"))
+# print(retrieve_time_based_on_day(cursor, "Mandag", "Trondheim"))
