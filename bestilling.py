@@ -3,7 +3,7 @@ from datetime import datetime
 from util import create_connection
 from kunde import Kunde, makeKunde, insertIntoTableKunde
 from jernbane import Jernbane, retrieveStasjon, retrieve_all_stations
-from togrute import Togrute, retrieveTogrute, retrieve_based_on_time, retrieve_time_based_on_day
+from togrute import Togrute, retrieveTogrute, retrieve_based_on_time, retrieve_time_based_on_day, retrieveTripFromStartToFinish
 
 con, cursor = create_connection()
 eng_to_nor = {
@@ -63,8 +63,10 @@ def bestilling(kundenummer):
             continue
 
         # Finn togruter
-        liste_med_togruter_fra_stasjon = retrieve_time_based_on_day(cursor, day_of_week, start_stasjon)
+        liste_med_togruter_fra_stasjon_til_stasjon = retrieveTripFromStartToFinish(
+            cursor, start_stasjon, slutt_stasjon, day_of_week)
         print(f"{start_stasjon} til {slutt_stasjon}:")
-        for tup in liste_med_togruter_fra_stasjon:
-            print(f"{tup[3]}: {tup[5]}")
+        for tup in liste_med_togruter_fra_stasjon_til_stasjon:
+            print(f"{tup[2]}: {tup[0]} - {tup[1]}")
 
+        print("Oppgi ønsket valg: \n")

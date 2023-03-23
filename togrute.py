@@ -11,7 +11,7 @@ class Togrute:
 
 def retrieveTogrute(cursor, ukedag):
     weekdays = getWeekdays()
-    
+
     if weekdays.index(ukedag) == 6:
         ukedag2 = -1
     else:
@@ -43,8 +43,6 @@ def retrieveTogrute(cursor, ukedag):
 
 
 def retrieve_based_on_time(cursor, tidspunkt):
-    weekdays = getWeekdays()
-    
     try:
         cursor.execute(
             '''
@@ -80,21 +78,25 @@ def retrieve_based_on_time(cursor, tidspunkt):
 
 def getNextDay(day):
     weekdays = getWeekdays()
-    
+
     if weekdays.index(day) == 6:
         return weekdays[0]
     else:
         return weekdays[weekdays.index(day) + 1]
 
 
-def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
-    # finn neste dag også
+def getPreviousDay(day):
     weekdays = getWeekdays()
 
-    if weekdays.index(ukedag) == 6:
-        ukedag2 = weekdays[0]
+    if weekdays.index(day) == 0:
+        return weekdays[6]
     else:
-        ukedag2 = weekdays[weekdays.index(ukedag) + 1]
+        return weekdays[weekdays.index(day) - 1]
+
+
+def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
+    # finn neste dag også
+    next_day = getNextDay(ukedag)
 
     try:
         # Hent rutetider for stasjonen på gitt ukedag og etterfølgende dag
@@ -121,7 +123,7 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
                 WHEN Navn_på_dag = ? THEN 0
                 ELSE 1
             END, ankomsttid_avgangstid
-            ''', (ukedag, ukedag2, stasjonNavn, ukedag)
+            ''', (ukedag, next_day, stasjonNavn, ukedag)
         )
     except sqlite3.Error as e:
         print(e)
@@ -129,14 +131,14 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
     info = cursor.fetchall()
     info_to_return = []
 
-    # Sjekke om klokka har bikket 00:00 fra forrige stasjon, da skal neste dag skrives i stadet
+    # Sjekke om klokka har bikket 00:00 fra forrige stasjon, da skal neste dag skrives i stedet
     for tup in info:
-        #hopp over sjekk hvis sekvensnummer er 1, og bare gi den sin dag
+        # hopp over sjekk hvis sekvensnummer er 1, og bare gi den sin dag
         if tup[6] == 1:
             info_to_return.append(
-            [tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], tup[6]])
+                [tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], tup[6]])
             continue
-        #Hent forrige stasjon
+        # Hent forrige stasjon
         cursor.execute(
             '''
             SELECT
@@ -165,26 +167,50 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
 
 
 def retrieveTripFromStartToFinish(cursor, startStasjon, sluttStasjon, ukedag):
-    startStasjon_info = retrieve_time_based_on_day(cursor, ukedag, startStasjon)
-    print(startStasjon_info)
+    startStasjon_info = retrieve_time_based_on_day(
+        cursor, ukedag, startStasjon)
+
+    previous_day = getPreviousDay(ukedag)
+    startStasjon_previous_day = retrieve_time_based_on_day(
+        cursor, previous_day, startStasjon)
+    for start_tup in startStasjon_previous_day:
+        # fjern de som ikke er på forrige dag fra denne lista
+        if start_tup[3] != previous_day:
+            startStasjon_previous_day.remove(start_tup)
+
     cursor.execute(
-            '''
+        '''
             SELECT
                 *
-
+                
             FROM
                 Stasjon_i_rute
-                JOIN
+                NATURAL JOIN
                 Stasjon
 
             WHERE
-                rute_id = ?
-                AND
                 navn = ?
-            ''', (startStasjon_info[0][4], sluttStasjon) # startStasjon_info[0][4] er ruteID som skal være lik for alle i den lista
-        )
+            ''', (sluttStasjon, )
+    )
+    sluttStasjon_info = cursor.fetchall()
 
-    pass
+    # print("startStasjon_info: ", startStasjon_info,
+    #      "sluttStasjon_info: ", sluttStasjon_info)
+
+    info_to_return = []
+    for start_tup in startStasjon_info:
+        start_index = start_tup[6]
+
+        for slutt_tup in sluttStasjon_info:
+            slutt_index = slutt_tup[1]
+
+            # sluttstasjon må komme etter (ha større sekvensnummer, og ruteID må være lik)
+            if slutt_index > start_index and slutt_tup[0] == start_tup[4]:
+                # returnerer starttid, sluttid og dag
+                info_to_return.append(
+                    (start_tup[5], slutt_tup[2], start_tup[3]))
+
+    return info_to_return
 
 
 cursor = create_connection()[1]
