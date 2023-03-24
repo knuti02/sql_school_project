@@ -8,31 +8,46 @@ class Togrute:
     def __init__(self, togrute_id):
         self.togrute_id = togrute_id
 
-
-def retrieveTogrute(cursor, ukedag):
-    weekdays = getWeekdays()
-
-    if weekdays.index(ukedag) == 6:
-        ukedag2 = -1
-    else:
-        ukedag2 = weekdays[weekdays.index(ukedag) + 1]
+# Brukerhistorie C: Bruker skal oppgi en Stasjon og dag,
+#        også få opp alle togruter som går fra denne stasjonen på denne dagen
+def retrieveTogrute(cursor, ukedag, stasjon):
 
     try:
         cursor.execute(
             '''
-            SELECT
-                *
+            SELECT * FROM
+                (SELECT T1.rute_ID, T2.ankomsttid_avgangstid, T1.sekvensnummer, T1.ankomsttid_avgangstid
+                FROM
+                    (SELECT
+                        *
 
-            FROM
-                Togrute
-                NATURAL JOIN
-                Ukedag
+                    FROM
+                        ((Togrute
+                        NATURAL JOIN 
+                        Ukedag)
+                        NATURAL JOIN
+                        Stasjon_i_rute)
+                        NATURAL JOIN
+                        Stasjon
+                    WHERE
+                        Navn_på_dag = ?
+                        AND navn = ?
+                    
+                    )AS T2
+                JOIN
+                    Stasjon_i_rute AS T1
+                    WHERE
+                    T2.rute_ID = T1.rute_ID
+                    
+                    ) AS T3
+            NATURAL JOIN
+                Stasjon AS T5
+            
+            
+            
 
-            WHERE
-                Navn_på_dag = ?
 
-
-            ''', (ukedag,)
+            ''', (ukedag, stasjon)
         )
     except sqlite3.Error as e:
         print(e)
@@ -40,6 +55,9 @@ def retrieveTogrute(cursor, ukedag):
 
     info = cursor.fetchall()
     return info
+
+cursor = create_connection()[1]
+print(retrieveTogrute(cursor, "Mandag", "Steinkjer"))
 
 
 def retrieve_based_on_time(cursor, tidspunkt):
@@ -209,10 +227,25 @@ def retrieveTripFromStartToFinish(cursor, startStasjon, sluttStasjon, ukedag):
                 # returnerer starttid, sluttid og dag
                 info_to_return.append(
                     (start_tup[5], slutt_tup[2], start_tup[3]))
+    # Lik kode som over, bare for tidligere dag (for å få med nattog)
+    for start_tup in startStasjon_previous_day:
+        start_index = start_tup[6]
 
+        for slutt_tup in sluttStasjon_info:
+            slutt_index = slutt_tup[1]
+
+            # sluttstasjon må komme etter (ha større sekvensnummer, og ruteID må være lik)
+            if slutt_index > start_index and slutt_tup[0] == start_tup[4]:
+                # returnerer starttid, sluttid og dag
+                info_to_return.append(
+                    (start_tup[5], slutt_tup[2], start_tup[3]))
+
+    for tup in info_to_return:
+        #slett hvis det er forrige dag
+        if tup[2] == previous_day:
+            info_to_return.remove(tup)
     return info_to_return
 
 
-cursor = create_connection()[1]
-print(retrieveTripFromStartToFinish(cursor, "Trondheim", "Bodø", "Mandag"))
-# print(retrieve_time_based_on_day(cursor, "Mandag", "Trondheim"))
+# cursor = create_connection()[1]
+# print(retrieveTripFromStartToFinish(cursor, "Steinkjer", "Bodø", "Mandag"))
