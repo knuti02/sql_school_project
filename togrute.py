@@ -10,42 +10,54 @@ class Togrute:
 
 # Brukerhistorie C: Bruker skal oppgi en Stasjon og dag,
 #        også få opp alle togruter som går fra denne stasjonen på denne dagen
-def retrieveTogrute(cursor, ukedag, stasjon):
-
+def retrieveTogrute(cursor, ukedag, stasjon) -> list:
     try:
         cursor.execute(
             '''
-            SELECT * FROM
-                (SELECT T1.rute_ID, T2.ankomsttid_avgangstid, T1.sekvensnummer, T1.ankomsttid_avgangstid
+            SELECT
+                t1.rute_id, 
+                ankomsttid_avgangstid,
+                navn 
+                           
+            FROM (
+                SELECT 
+                    rute_id,
+                    ankomsttid_avgangstid
+                
                 FROM
-                    (SELECT
-                        *
-
-                    FROM
-                        ((Togrute
-                        NATURAL JOIN 
-                        Ukedag)
-                        NATURAL JOIN
-                        Stasjon_i_rute)
-                        NATURAL JOIN
-                        Stasjon
-                    WHERE
-                        Navn_på_dag = ?
-                        AND navn = ?
+                    Stasjon
+                    NATURAL JOIN
+                    Stasjon_i_rute
+                    NATURAL JOIN
+                    Ukedag
                     
-                    )AS T2
-                JOIN
-                    Stasjon_i_rute AS T1
-                    WHERE
-                    T2.rute_ID = T1.rute_ID
-                    
-                    ) AS T3
-            NATURAL JOIN
-                Stasjon AS T5
-            
-            
-            
-
+                WHERE
+                    Navn_på_dag = ?
+                    AND
+                    navn = ?
+                ) AS t1 JOIN (
+                SELECT
+                    rute_id,
+                    navn
+                FROM (
+                    SELECT 
+                        rute_id, 
+                        stasjon_id
+                        
+                    FROM (
+                        SELECT 
+                            rute_id,
+                            stasjon_id,
+                            sekvensnummer, 
+                            ROW_NUMBER() OVER (PARTITION BY rute_id ORDER BY sekvensnummer DESC) AS rute_nummer
+                        FROM Stasjon_i_rute
+                    ) t
+                    WHERE rute_nummer = 1
+                    ) NATURAL JOIN
+                    Stasjon
+                ) AS t2
+            ON t1.rute_id = t2.rute_id
+                
 
             ''', (ukedag, stasjon)
         )
@@ -55,9 +67,6 @@ def retrieveTogrute(cursor, ukedag, stasjon):
 
     info = cursor.fetchall()
     return info
-
-cursor = create_connection()[1]
-print(retrieveTogrute(cursor, "Mandag", "Steinkjer"))
 
 
 def retrieve_based_on_time(cursor, tidspunkt):
@@ -249,3 +258,9 @@ def retrieveTripFromStartToFinish(cursor, startStasjon, sluttStasjon, ukedag):
 
 # cursor = create_connection()[1]
 # print(retrieveTripFromStartToFinish(cursor, "Steinkjer", "Bodø", "Mandag"))
+
+if __name__ == '__main__':
+    cursor = create_connection()[1]
+    #print(retrieveTogrute(cursor, "Mandag", "Steinkjer"))
+    for i in retrieveTogrute(cursor, "Lørdag", "Steinkjer"):
+        print(i)
