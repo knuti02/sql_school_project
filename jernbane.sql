@@ -12,7 +12,7 @@ CREATE TABLE "Stasjon_i_rute" (
 	"avgangstid"	TIME,
 	"sekvensnummer"	INTEGER,
 	FOREIGN KEY("rute_ID") REFERENCES "Togrute"("rute_ID") ON UPDATE CASCADE ON DELETE CASCADE,
-	FOREIGN KEY("stasjon_ID") REFERENCES "Stasjon"("stasjon_ID") ON UPDATE CASCADE ON DELETE CASCADE
+	FOREIGN KEY("stasjon_ID") REFERENCES "Stasjon"("stasjon_ID") ON UPDATE CASCADE ON DELETE CASCADE,
     PRIMARY KEY("rute_ID","stasjon_ID")
 );
 
@@ -80,12 +80,17 @@ CREATE TABLE "Kunde" (
 
 CREATE TABLE "Kundeordre" (
 	"ordrenummer"	INTEGER,
-	"dag"	VARCHAR(50),
+	"dato_for_kjøp"	VARCHAR(8),
 	"tid"	TIME,
+	"dato_for_tur"	VARCHAR(8),
 	"kundenummer"	INTEGER,
+	"rute_id"	INTEGER,
 	PRIMARY KEY("ordrenummer"),
-	FOREIGN KEY("kundenummer") REFERENCES "Kunde"("kundenummer") ON UPDATE CASCADE ON DELETE CASCADE
+	FOREIGN KEY("kundenummer") REFERENCES "Kunde"("kundenummer") ON UPDATE CASCADE ON DELETE CASCADE,
+	FOREIGN KEY("rute_id") REFERENCES "Togrute"("rute_ID") ON UPDATE CASCADE ON DELETE CASCADE
+	
 );
+
 
 CREATE TABLE "Billett" (
 	"Billett_ID"	INTEGER,

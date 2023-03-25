@@ -1,7 +1,6 @@
 import sqlite3
 
-# class for togrute
-from util import create_connection
+from util import *
 def finn_slutt_stasjon_for_rute(cursor, rute_id):
     cursor.execute(
         ''' SELECT
@@ -61,8 +60,8 @@ def finn_slutt_stasjon_for_alle_ruter(cursor):
     )
     return cursor.fetchall()
 
-
-def start_to_finish(cursor, start, finish, day):
+# Brukerhistorie D
+def start_to_finish(cursor, start, finish, day, time):
     cursor.execute(
         '''
         SELECT DISTINCT
@@ -105,7 +104,18 @@ def start_to_finish(cursor, start, finish, day):
             start.Navn_på_dag = ?
             AND
             start.sekvensnummer < finish.sekvensnummer
-        ''', (start, finish, day,)
+            AND
+            start.ankomsttid_avgangstid >= (
+                    SELECT
+                        ankomsttid_avgangstid
+                    FROM
+                        Stasjon_i_rute
+                    WHERE
+                        ankomsttid_avgangstid >= ?
+                    ORDER BY
+                        ABS(strftime('%s', ?) - strftime('%s', ankomsttid_avgangstid))
+            )
+        ''', (start, finish, day, time, time)
     )
     return cursor.fetchall()
 
@@ -113,4 +123,6 @@ def start_to_finish(cursor, start, finish, day):
 
 cursor = create_connection()[1]
 
-print(start_to_finish(cursor, "Trondheim", "Bodø", "Mandag"))
+print(start_to_finish(cursor, "Steinkjer", "Bodø", "Mandag", "06:00"))
+print(start_to_finish(cursor, "Steinkjer", "Bodø", getNextDay("Mandag"), "00:00"))
+

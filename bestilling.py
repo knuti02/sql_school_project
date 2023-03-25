@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from util import create_connection
-from kunde import Kunde, makeKunde, insertIntoTableKunde
-from jernbane import Jernbane, retrieveStasjon, retrieve_all_stations
-from togrute import Togrute, retrieveTogrute, retrieve_based_on_time, retrieve_time_based_on_day, retrieveTripFromStartToFinish
+from util import *
+from jernbane import retrieve_all_stations
+from togrute import *
+from billett import *
 
 con, cursor = create_connection()
 eng_to_nor = {
@@ -21,7 +21,7 @@ eng_to_nor = {
 
 def bestilling(kundenummer):
     stations = retrieve_all_stations(cursor)
-    print("Dette er bestillingssiden! \nFor å logge ut, skriv \"Q\"\n")
+    print("Dette er bestillingssiden!")
     print("Nordlandsbanen går mellom stasjonene: \n")
     # print(stations)
     for stasjon in stations:
@@ -30,8 +30,21 @@ def bestilling(kundenummer):
     print("\nRutene går på alle dagene i uka:\nMandag,\nTirsdag,\nOnsdag,\nTorsdag,\nFredag,\nLørdag,\nSøndag\n")
 
     while True:
+        valg = input(
+                'For å se togruter, skriv 1. \nFor å se ledige plasser, skriv 2. \nFor å bestille billett, skriv 3. \nFor å se bestillinger, skriv 4. \nFor å logge ut, skriv 5. \n')
+        
+        if valg == "1":
+            se_togruter(stations)
+            
+        elif valg == "2":
+            se_ledige_plasser()
+        
+
+def se_togruter(stations):
+
+    while True:
         kunde_input = input(
-            'For å se togruter, skriv: "STARTSTASJON, SLUTTSTASJON, DD/MM/ÅÅ":\n')
+                'For å se togruter, skriv: "STARTSTASJON, Dag":\nFor å gå tilbake, skriv "Q"\n')
         if kunde_input == "Q" or kunde_input == "q":
             return
 
@@ -39,34 +52,35 @@ def bestilling(kundenummer):
 
         try:
             start_stasjon = input_list[0]
-            slutt_stasjon = input_list[1]
-            dato = input_list[2]
+            day_of_week = input_list[1]
+            # dato = input_list[2]
 
-            date_obj = datetime.strptime(dato, "%d/%m/%y")
-            day_of_week = date_obj.strftime("%A")
-            day_of_week = eng_to_nor[day_of_week]
+            # date_obj = datetime.strptime(dato, "%d/%m/%y")
+            # day_of_week = date_obj.strftime("%A")
+            # day_of_week = eng_to_nor[day_of_week]
 
         except:
             print("Ugyldig input!")
-            continue
+            return
 
         if start_stasjon not in stations:
             print("Ugyldig startstasjon!")
-            continue
-        if slutt_stasjon not in stations:
-            print("Ugyldig sluttstasjon")
-            continue
-
-        # sjekk om stasjonene er i samme by
-        if start_stasjon.lower == slutt_stasjon.lower:
-            print("Start- og sluttstasjon kan ikke være like!")
-            continue
+            return
 
         # Finn togruter
-        liste_med_togruter_fra_stasjon_til_stasjon = retrieveTripFromStartToFinish(
-            cursor, start_stasjon, slutt_stasjon, day_of_week)
-        print(f"{start_stasjon} til {slutt_stasjon}:")
-        for tup in liste_med_togruter_fra_stasjon_til_stasjon:
-            print(f"{tup[2]}: {tup[0]} - {tup[1]}")
+        liste_med_togruter_fra_stasjon_til_stasjon = retrieveTogrute(
+            cursor, day_of_week, start_stasjon)
+        print(f"\nAvganger fra {start_stasjon} på {day_of_week}:")
+        for togrute in liste_med_togruter_fra_stasjon_til_stasjon:
+            if togrute[2] == start_stasjon:
+                continue
+            print(f"Togrute {togrute[0]}: går {togrute[1]} mot {togrute[2]}")
+        print("")    
+        
 
-        print("Oppgi ønsket valg: \n")
+def se_ledige_plasser():
+    pass
+
+
+if __name__ == "__main__":
+    bestilling(1)

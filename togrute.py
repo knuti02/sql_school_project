@@ -1,7 +1,7 @@
 import sqlite3
 
 # class for togrute
-from util import create_connection, getWeekdays
+from util import *
 
 
 class Togrute:
@@ -11,76 +11,107 @@ class Togrute:
 # Brukerhistorie C: Bruker skal oppgi en Stasjon og dag,
 #        også få opp alle togruter som går fra denne stasjonen på denne dagen
 def retrieveTogrute(cursor, ukedag, stasjon) -> list:
-    try:
-        cursor.execute(
-            '''
+    cursor.execute(
+        '''
+        SELECT
+            t1.rute_id, 
+            ankomsttid_avgangstid,
+            navn 
+                        
+        FROM (
+            SELECT 
+                rute_id,
+                ankomsttid_avgangstid
+            
+            FROM
+                Stasjon
+                NATURAL JOIN
+                Stasjon_i_rute
+                NATURAL JOIN
+                Ukedag
+                
+            WHERE
+                Navn_på_dag = ?
+                AND
+                navn = ?
+            ) AS t1 JOIN (
             SELECT
-                t1.rute_id, 
-                ankomsttid_avgangstid,
-                navn 
-                           
+                rute_id,
+                navn
             FROM (
                 SELECT 
-                    rute_id,
-                    ankomsttid_avgangstid
-                
-                FROM
-                    Stasjon
-                    NATURAL JOIN
-                    Stasjon_i_rute
-                    NATURAL JOIN
-                    Ukedag
+                    rute_id, 
+                    stasjon_id
                     
-                WHERE
-                    Navn_på_dag = ?
-                    AND
-                    navn = ?
-                ) AS t1 JOIN (
-                SELECT
-                    rute_id,
-                    navn
                 FROM (
                     SELECT 
-                        rute_id, 
-                        stasjon_id
-                        
-                    FROM (
-                        SELECT 
-                            rute_id,
-                            stasjon_id,
-                            sekvensnummer, 
-                            ROW_NUMBER() OVER (PARTITION BY rute_id ORDER BY sekvensnummer DESC) AS rute_nummer
-                        FROM Stasjon_i_rute
-                    ) t
-                    WHERE rute_nummer = 1
-                    ) NATURAL JOIN
+                        rute_id,
+                        stasjon_id,
+                        sekvensnummer, 
+                        ROW_NUMBER() OVER (PARTITION BY rute_id ORDER BY sekvensnummer DESC) AS rute_nummer
+                    FROM Stasjon_i_rute
+                ) t
+                WHERE rute_nummer = 1
+                ) NATURAL JOIN
+                Stasjon
+            ) AS t2
+        ON t1.rute_id = t2.rute_id
+            
+
+        ''', (ukedag, stasjon)
+    )
+
+    return cursor.fetchall()
+
+
+
+# Brukerhistorie D: Bruker skal oppgi en Stasjon, sluttstasjon, dag og tid
+#        også få opp alle togruter som passer.
+def start_to_finish(cursor, start, finish, day, time):
+    cursor.execute(
+        '''
+        SELECT DISTINCT
+            start.rute_id,
+            start.ankomsttid_avgangstid,
+            finish.ankomsttid_avgangstid
+        FROM 
+            (
+                SELECT
+                    *
+                FROM
                     Stasjon
-                ) AS t2
-            ON t1.rute_id = t2.rute_id
-                
-
-            ''', (ukedag, stasjon)
-        )
-    except sqlite3.Error as e:
-        print(e)
-        return None
-
-    info = cursor.fetchall()
-    return info
-
-
-def retrieve_based_on_time(cursor, tidspunkt):
-    try:
-        cursor.execute(
-            '''
-            SELECT
-                *
-
-            FROM
-                Stasjon_i_rute
-
-            WHERE
-                ankomsttid_avgangstid = (
+                    JOIN
+                    Stasjon_i_rute  
+                    NATURAL JOIN
+                    Ukedag   
+                WHERE
+                    navn = ?  
+                    AND
+                    Stasjon.stasjon_id = Stasjon_i_rute.stasjon_id 
+                            
+            ) AS start 
+            JOIN 
+            (
+                SELECT
+                    *
+                FROM
+                    Stasjon
+                    JOIN
+                    Stasjon_i_rute  
+                    NATURAL JOIN
+                    Ukedag
+                WHERE
+                    navn = ?  
+                    AND
+                    Stasjon.stasjon_id = Stasjon_i_rute.stasjon_id 
+            ) AS finish
+            ON start.rute_id = finish.rute_id
+        WHERE 
+            start.Navn_på_dag = ?
+            AND
+            start.sekvensnummer < finish.sekvensnummer
+            AND
+            start.ankomsttid_avgangstid >= (
                     SELECT
                         ankomsttid_avgangstid
                     FROM
@@ -89,39 +120,17 @@ def retrieve_based_on_time(cursor, tidspunkt):
                         ankomsttid_avgangstid >= ?
                     ORDER BY
                         ABS(strftime('%s', ?) - strftime('%s', ankomsttid_avgangstid))
-                    LIMIT 1
-                )
+            )
+        ''', (start, finish, day, time, time)
+    )
+    
+    return cursor.fetchall()
 
 
-            ''', (tidspunkt, tidspunkt)  # Finds closest time to the given time, that is not less than inputted time
-        )
-    except sqlite3.Error as e:
-        print(e)
-        return None
-
-    info = cursor.fetchall()
-    return info
 
 
-def getNextDay(day):
-    weekdays = getWeekdays()
 
-    if weekdays.index(day) == 6:
-        return weekdays[0]
-    else:
-        return weekdays[weekdays.index(day) + 1]
-
-
-def getPreviousDay(day):
-    weekdays = getWeekdays()
-
-    if weekdays.index(day) == 0:
-        return weekdays[6]
-    else:
-        return weekdays[weekdays.index(day) - 1]
-
-
-def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
+def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn) -> list:
     # finn neste dag også
     next_day = getNextDay(ukedag)
 
@@ -154,7 +163,7 @@ def retrieve_time_based_on_day(cursor, ukedag, stasjonNavn):
         )
     except sqlite3.Error as e:
         print(e)
-        return None
+        return ["Exeption thrown"]
     info = cursor.fetchall()
     info_to_return = []
 
@@ -261,6 +270,4 @@ def retrieveTripFromStartToFinish(cursor, startStasjon, sluttStasjon, ukedag):
 
 if __name__ == '__main__':
     cursor = create_connection()[1]
-    #print(retrieveTogrute(cursor, "Mandag", "Steinkjer"))
-    for i in retrieveTogrute(cursor, "Lørdag", "Steinkjer"):
-        print(i)
+    

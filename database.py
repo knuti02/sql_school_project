@@ -195,6 +195,8 @@ def insertIntoTableUkedag():
 
 
 
+
+
 # insertIntoTableBanstrekning()
 
 # insertIntoTableStasjoner()

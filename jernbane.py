@@ -29,7 +29,7 @@ def retrieve_all_stations(cursor):
             '''SELECT * FROM Stasjon'''
         )
     except:
-        return None
+        return []
 
     info = cursor.fetchall()
 
