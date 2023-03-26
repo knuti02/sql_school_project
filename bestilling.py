@@ -4,6 +4,7 @@ from util import *
 from jernbane import retrieve_all_stations
 from togrute import *
 from billett import *
+from orders import viewOrders
 
 con, cursor = create_connection()
 eng_to_nor = {
@@ -43,10 +44,14 @@ def bestilling(kundenummer):
             
             orderTickets(kundenummer, dato, start_stasjon, slutt_stasjon)
             
-        
+        elif valg == "3":
+            viewOrders(kundenummer)
+            
+        elif valg == "4":
+            return
+            
 
 def se_togruter(stations):
-
     while True:
         kunde_input = input(
                 'For å se togruter, skriv: "STARTSTASJON, Dag":\nFor å gå tilbake, skriv "Q"\n')
@@ -58,11 +63,6 @@ def se_togruter(stations):
         try:
             start_stasjon = input_list[0]
             day_of_week = input_list[1]
-            # dato = input_list[2]
-
-            # date_obj = datetime.strptime(dato, "%d/%m/%y")
-            # day_of_week = date_obj.strftime("%A")
-            # day_of_week = eng_to_nor[day_of_week]
 
         except:
             print("Ugyldig input!")

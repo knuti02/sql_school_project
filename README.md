@@ -1,5 +1,9 @@
 # Prosjekt Database
 
+Initialiser databasen ved å kjøre 'database.py', slik vil all nødvendig informasjon bli fylt inn slik at programmet har info å ta utgangspunkt i.
+
+Start programmet ved å kjøre start_menu.py
+
 ## Antakelser
 
 * Vi antar at når en bruker søker etter togruter med et klokkeslett på en gitt dag,

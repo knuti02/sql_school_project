@@ -49,7 +49,7 @@ def orderTickets(kundenummer, dato, start_stasjon, slutt_stasjon):
     temp_list_of_sit = []
     temp_list_of_sleep = []
     
-    tid = input("Når vil du dra fra?:\n")
+    tid = input("Når vil du dra?:\n")
     choice = findRoute(dato, tid, start_stasjon, slutt_stasjon)
     tickets = findLegalTickets(choice, start_stasjon, slutt_stasjon)
     
@@ -67,7 +67,7 @@ def orderTickets(kundenummer, dato, start_stasjon, slutt_stasjon):
                 num += 1
 
     if number_of_tickets > num:
-        print("Ikke nok tickets tilgjenglig!")
+        print("Ikke nok billetter tilgjenglig!")
         return
     
     makeOrder(kundenummer, dato, choice[0])
@@ -81,23 +81,23 @@ def orderTickets(kundenummer, dato, start_stasjon, slutt_stasjon):
         
         if len(tickets[indeks -1]) == 12: 
             if plass_nr in temp_list_of_sit:
-                print("Spot taken!")
+                print("Sete er ikke tilgjengelig!")
                 continue
             
             temp_list_of_sit.append(plass_nr)
                 
             if tickets[indeks - 1][plass_nr - 1] == 'X':
-                print("Spot taken!")
+                print("Sete er ikke tilgjengelig!")
                 continue
         else:
             if plass_nr in temp_list_of_sleep:
-                print("Spot taken!")
+                print("Sete er ikke tilgjengelig!")
                 continue
             
             temp_list_of_sleep.append(plass_nr)
             
             if 'X' in tickets[indeks - 1][floor(plass_nr / 2) + plass_nr % 2 - 1]:
-                print("Spot taken!")
+                print("Sete er ikke tilgjengelig!")
                 continue
         
         
@@ -149,11 +149,21 @@ def findRoute(dato, tid, start_stasjon, slutt_stasjon):
         routes.append((i[0], nextDate(dato), i[1], i[2]))
      
     # Spør bruker hvilken av rutene hen vil velge
-    for i in range(len(routes)):
+    amount_of_routes = len(routes)
+    for i in range(amount_of_routes):
         print(f"Forslag {i}: rute {routes[i][0]}, dato: {routes[i][1]}, avgangstid: {routes[i][2]}, ankomsttid: {routes[i][3]}")
 
-    choice = routes[int(input("Hvilket forslag (nummer) vil du ha?:\n"))] #(rute_id, dato, avgangstid, ankomsttid)
-        
+    num = -1
+    while not (num > 0 and num <= amount_of_routes):
+        try:
+            num = int(input("Hvilket forslag (nummer) vil du ha?:\n"))
+        except:
+            continue
+
+    choice = routes[num] #(rute_id, dato, avgangstid, ankomsttid)
+    
+    
+    
     return choice
     
 def findLegalTickets(choice, startstasjon, sluttstasjon):
@@ -343,6 +353,6 @@ def insertTicketsToDatabase(tickets):
     con.commit()
        
 if __name__ == '__main__':
-    orderTickets(1, "27/03/23", "Trondheim", "Bodø")
+    orderTickets(1, "28/03/23", "Trondheim", "Bodø")
     #print(findLegalTickets(findRoute("03/04/23", "17:41", "Trondheim", "Bodø"), "Trondheim", "Bodø"))
     pass

@@ -197,27 +197,27 @@ def insertIntoTableUkedag():
 
 
 
-# insertIntoTableBanstrekning()
+insertIntoTableBanstrekning()
 
-# insertIntoTableStasjoner()
+insertIntoTableStasjoner()
 
-# insertIntoTableDelstrekning()
+insertIntoTableDelstrekning()
 
-# insertIntoTableSittevogn()
+insertIntoTableSittevogn()
 
-# insertIntoTableSovevogn()
+insertIntoTableSovevogn()
 
-# insertIntoTableVogn()
+insertIntoTableVogn()
 
-# insertIntoTableVognoppsett()
+insertIntoTableVognoppsett()
 
-# insertIntoTableInneholderVogn()
+insertIntoTableInneholderVogn()
 
-# insertIntoTableTogrute()
+insertIntoTableTogrute()
 
-# insertIntoTableStasjonIRute()
+insertIntoTableStasjonIRute()
 
-# insertIntoTableUkedag()
+insertIntoTableUkedag()
 
 
 con.close()
