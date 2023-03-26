@@ -73,7 +73,8 @@ def start_to_finish(cursor, start, finish, day, time):
         SELECT DISTINCT
             start.rute_id,
             start.ankomsttid_avgangstid,
-            finish.ankomsttid_avgangstid
+            finish.ankomsttid_avgangstid,
+            start.navn_på_dag
         FROM 
             (
                 SELECT
@@ -123,10 +124,18 @@ def start_to_finish(cursor, start, finish, day, time):
             )
         ''', (start, finish, day, time, time)
     )
-    
     return cursor.fetchall()
+    
 
-
+def print_routes_from_start_to_finish(cursor, start, finish, day, time):
+    today = start_to_finish(cursor, start, finish, day, time)
+    tomorrow = start_to_finish(cursor, start, finish, getNextDay(day), "00:00")
+    
+    print(f"Ruter fra {start} til {finish}:")
+    for rute in today:
+        print(f"{rute[3]}: Rute {rute[0]}, avgang {rute[1]}, ankomst {rute[2]}")
+    for rute in tomorrow:
+        print(f"{rute[3]}: Rute {rute[0]}, avgang {rute[1]}, ankomst {rute[2]}")
 
 
 

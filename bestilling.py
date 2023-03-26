@@ -17,6 +17,8 @@ eng_to_nor = {
     "Sunday": "Søndag"
 }
 
+stations = retrieve_all_stations(cursor)
+
 # Start program med "innlogging", ved å bare skrive inn navn og kunde ID
 
 
@@ -32,22 +34,54 @@ def bestilling(kundenummer):
 
     while True:
         valg = input(
-                'For å se togruter, skriv 1. \nFor å bestille billett, skriv 2. \nFor å se bestillinger, skriv 3. \nFor å logge ut, skriv 4. \n')
+                'For å se togruter, skriv 1. \nFor å se togruter mellom to stasjoner, skriv 2. \nFor å bestille billett, skriv 3. \nFor å se bestillinger, skriv 4. \nFor å logge ut, skriv 5. \n')
         
         if valg == "1":
             se_togruter(stations)
             
         elif valg == "2":
+            start_stasjon = ""
+            while start_stasjon not in stations:
+                
+                start_stasjon = input("Hvilken stasjon vil du reise fra?:\n")
+                if start_stasjon not in stations:
+                    print("Stasjonen finnes ikke!")
+            slutt_stasjon = ""
+            while slutt_stasjon not in stations:
+                
+                slutt_stasjon = input("Hvilken stasjon skal du reise til?:\n")
+                if slutt_stasjon not in stations:
+                    print("Stasjonen finnes ikke!")
+
             dato = input("Når skal du reise? (dd/mm/yy):\n")
-            start_stasjon = input("Fra hvilken stasjon vil du reise fra?:\n")
-            slutt_stasjon = input("Til hvilken stasjon skal du reise til?:\n")
+            day = getWeekdayBasedOnDate(dato)
+            
+            kl = input("Hvilken tid vil du reise? (hh:mm):\n")
+            
+            print_routes_from_start_to_finish(cursor, start_stasjon, slutt_stasjon, day, kl)
+            
+        elif valg == "3":
+            dato = input("Når skal du reise? (dd/mm/yy):\n")
+            
+            start_stasjon = ""
+            while start_stasjon not in stations:
+                
+                start_stasjon = input("Hvilken stasjon vil du reise fra?:\n")
+                if start_stasjon not in stations:
+                    print("Stasjonen finnes ikke!")
+            slutt_stasjon = ""
+            while slutt_stasjon not in stations:
+                
+                slutt_stasjon = input("Hvilken stasjon skal du reise til?:\n")
+                if slutt_stasjon not in stations:
+                    print("Stasjonen finnes ikke!")
             
             orderTickets(kundenummer, dato, start_stasjon, slutt_stasjon)
             
-        elif valg == "3":
+        elif valg == "4":
             viewOrders(kundenummer)
             
-        elif valg == "4":
+        elif valg == "5":
             return
             
 

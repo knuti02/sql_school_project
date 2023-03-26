@@ -8,14 +8,14 @@ class Kunde:
  
 #lag kunde. første kunde får kundenummer 0, andre 1 osv.    
 def makeKunde(cursor, navn, adresse, telefonnummer):
-    try:
-        cursor.execute(
-            '''SELECT MAX(kundenummer) FROM Kunde''')
-        
-        max_value = cursor.fetchone()[0]
-    except:
-        max_value = -1
+    cursor.execute(
+        '''SELECT MAX(kundenummer) FROM Kunde''')
     
+    max_value = cursor.fetchone()[0]
+    
+    if isinstance(max_value, type(None)):
+        max_value = -1
+        
     return Kunde(max_value + 1, navn, adresse, telefonnummer)
 
 # legg kunde inn i Kunde og Kunderegister

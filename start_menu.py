@@ -25,7 +25,7 @@ def program_loop():
             '''SELECT MAX(kundenummer) FROM Kunde''')
         max_value = cursor.fetchone()[0]
 
-        print(f"Din ID er {max_value}, denne må du huske for å logge inn!\n")
+        print(f"Ditt kundenummer er {max_value}, denne må du huske for å logge inn!\n")
         program_loop()
 
     else:

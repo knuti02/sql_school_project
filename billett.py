@@ -21,12 +21,13 @@ class Billett:
 
 
 def makeOrder(kundenummer, dato, rute_id):
-    try:
-        cursor.execute(
-            '''SELECT MAX(Billett_ID) FROM Billett''')
-        
-        next_order = cursor.fetchone()[0]
-    except:
+    
+    cursor.execute(
+        '''SELECT MAX(ordrenummer) FROM Kundeordre''')
+    
+    next_order = cursor.fetchone()[0]
+
+    if isinstance(next_order, type(None)):
         next_order = -1
 
     cursor.execute(
@@ -49,35 +50,47 @@ def orderTickets(kundenummer, dato, start_stasjon, slutt_stasjon):
     temp_list_of_sit = []
     temp_list_of_sleep = []
     
-    tid = input("Når vil du dra?:\n")
+    tid = input("Når vil du dra? (hh:mm):\n")
     choice = findRoute(dato, tid, start_stasjon, slutt_stasjon)
     tickets = findLegalTickets(choice, start_stasjon, slutt_stasjon)
     
-    print(f"Tilgjenglige billetter: {tickets}")
+    print("Seteoversikt:\n")
+    for i in range(len(tickets)):
+        print(f"Vogn {i+1}: {tickets[i]}")
 
-    number_of_tickets = int(input("Hvor mange billetter vil du kjøpe?\n"))    
-    
     num = 0
     for i in tickets:
         for e in i:
             if isinstance(e, tuple):
-                for element in e:
-                    num += 1
+                num += len(e)
             else:
                 num += 1
-
-    if number_of_tickets > num:
-        print("Ikke nok billetter tilgjenglig!")
-        return
+                
+    number_of_tickets = -1
+    while number_of_tickets < 1 or number_of_tickets > num:
+        number_of_tickets = int(input("Hvor mange billetter vil du kjøpe?\n"))
+        
+        if number_of_tickets > num:
+            print("For mange billetter")
+        elif number_of_tickets < 1:
+            print("Må være et heltall")
     
     makeOrder(kundenummer, dato, choice[0])
     
     i = 0
     while i < int(number_of_tickets):
-        indeks = int(input("Hvilken vogn?\n")) 
+        print(f"Billett {i+1}:")
+        indeks_input = -1
+        while indeks_input <= 0 or indeks_input > len(tickets):
+            indeks_input = int(input("Hvilken vogn?\n"))
+            
+        indeks = indeks_input
+
         id = getVognId(choice[0], indeks)
         type = getType(id)
-        plass_nr = int(input("Hvilket plassnummer?\n"))
+        plass_nr = -1
+        while plass_nr <= 0 or plass_nr > (12 if type == "Sittevogn" else 8):
+            plass_nr = int(input("Hvilket plassnummer?\n"))
         
         if len(tickets[indeks -1]) == 12: 
             if plass_nr in temp_list_of_sit:
@@ -127,12 +140,13 @@ def orderTickets(kundenummer, dato, start_stasjon, slutt_stasjon):
         
 
 def makeTicket(plass_nr, start_stasjon, slutt_stasjon, ordrenummer, vogn_id, billettype, indeks, amount_made):
-    try:
-        cursor.execute(
-            '''SELECT MAX(Billett_ID) FROM Billett''')
-        
-        max_value = cursor.fetchone()[0]
-    except:
+
+    cursor.execute(
+        '''SELECT MAX(Billett_ID) FROM Billett''')
+    
+    max_value = cursor.fetchone()[0]
+    
+    if isinstance(max_value, type(None)):
         max_value = -1
     
     return Billett(max_value + 1 + amount_made, plass_nr, start_stasjon, slutt_stasjon, ordrenummer, vogn_id, billettype, indeks)
@@ -151,7 +165,7 @@ def findRoute(dato, tid, start_stasjon, slutt_stasjon):
     # Spør bruker hvilken av rutene hen vil velge
     amount_of_routes = len(routes)
     for i in range(amount_of_routes):
-        print(f"Forslag {i}: rute {routes[i][0]}, dato: {routes[i][1]}, avgangstid: {routes[i][2]}, ankomsttid: {routes[i][3]}")
+        print(f"Forslag {i + 1}: rute {routes[i][0]}, dato: {routes[i][1]}, avgangstid: {routes[i][2]}, ankomsttid: {routes[i][3]}")
 
     num = -1
     while not (num > 0 and num <= amount_of_routes):
@@ -160,7 +174,7 @@ def findRoute(dato, tid, start_stasjon, slutt_stasjon):
         except:
             continue
 
-    choice = routes[num] #(rute_id, dato, avgangstid, ankomsttid)
+    choice = routes[num - 1] #(rute_id, dato, avgangstid, ankomsttid)
     
     
     

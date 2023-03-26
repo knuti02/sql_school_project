@@ -39,7 +39,7 @@ def viewOrders(kundenummer):
     for i in returnedInfo:
         infoToReturn.append(i)
         print(
-            f"Ordrenummer: {i[0]}, Dato for tur: {i[1]}, Rute ID: {i[2]}, Billettype: {i[3]}, Vognnummer: {i[4]}, Plass: {i[5]}, Avgangsstasjon {i[6]}, Avgangstid: {i[7]}, Ankomststasjon: {i[8]}, Ankomsttid: {i[9]}")
+            f"Ordrenummer: {i[0]}, Dato for tur: {i[1]}, Rute ID: {i[2]}, Billettype: {i[3]}, Vognnummer: {i[4]}, Plass: {i[5]}, Avgangsstasjon: {i[6]}, Avgangstid: {i[7]}, Ankomststasjon: {i[8]}, Ankomsttid: {i[9]}")
 
     con.close()
     return infoToReturn

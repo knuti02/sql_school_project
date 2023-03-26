@@ -6,6 +6,12 @@ cursor = con.cursor()
 cursor.execute("SELECT * FROM sqlite_master")
 
 
+def insertIntoTableOperatør():
+    cursor.execute(
+        '''INSERT INTO Operatør VALUES ('1', 'SJ')''')
+
+    con.commit()
+    
 def insertIntoTableBanstrekning():
     # Banestrekning
     cursor.execute(
@@ -195,7 +201,7 @@ def insertIntoTableUkedag():
 
 
 
-
+insertIntoTableOperatør()
 
 insertIntoTableBanstrekning()
 
