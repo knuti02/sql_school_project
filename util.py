@@ -11,6 +11,7 @@ def getWeekdays():
             "Torsdag", "Fredag", "Lørdag", "Søndag"]
     
     return weekdays
+    
 
 def getNextDay(day):
     weekdays = getWeekdays()
@@ -41,8 +42,8 @@ def getWeekdayBasedOnDate(date: str):
         "Sunday": "Søndag"
     }
     
-    date_obj = datetime.strptime(date, '%d/%m/%Y')
-    weekday = date_obj.strftime('%A')
+    date_obj = datetime.strptime(date, '%d/%m/%y')
+    weekday = date_obj.strftime("%A")
     
     return eng_to_nor[weekday]
 
@@ -52,14 +53,17 @@ def getDateNow():
     
     return current_date
 
-def nextDate(date_string):
-    date_format = '%d/%m/%y'
-    date = datetime.strptime(date_string, date_format)
-    next_date = date + timedelta(days=1)
-    return next_date.strftime(date_format)
+def nextDate(date: str):
+    date_obj = datetime.strptime(date, '%d/%m/%y')
+    next_date = date_obj + timedelta(days=1)
+    return next_date.strftime('%A')
 
 def getTimeNow():
     now = datetime.now()
     current_time = now.time()
-    
+    current_time = current_time.strftime("%H:%M")
+        
     return current_time
+
+if __name__ == "__main__":
+    print(getTimeNow())

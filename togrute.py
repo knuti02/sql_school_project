@@ -265,9 +265,31 @@ def retrieveTripFromStartToFinish(cursor, startStasjon, sluttStasjon, ukedag):
     return info_to_return
 
 
-# cursor = create_connection()[1]
-# print(retrieveTripFromStartToFinish(cursor, "Steinkjer", "Bodø", "Mandag"))
+#given a station and a route, find its index
+def findIndex(station_name, route_id):
+    cursor.execute(
+        '''
+        SELECT
+            sekvensnummer
+        
+        FROM
+            Stasjon
+            JOIN
+            Stasjon_i_rute
+            
+        WHERE
+            Stasjon.navn = ?
+            AND
+            Stasjon_i_rute.rute_ID = ?
+            AND
+            Stasjon.stasjon_ID = Stasjon_i_rute.stasjon_ID
+        ''', (station_name, route_id)
+    )
+    return cursor.fetchone()[0]
+
+
+cursor = create_connection()[1]
 
 if __name__ == '__main__':
-    cursor = create_connection()[1]
+    print(findIndex("Mo i Rana", 1))
     

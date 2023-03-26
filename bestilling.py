@@ -31,13 +31,18 @@ def bestilling(kundenummer):
 
     while True:
         valg = input(
-                'For å se togruter, skriv 1. \nFor å se ledige plasser, skriv 2. \nFor å bestille billett, skriv 3. \nFor å se bestillinger, skriv 4. \nFor å logge ut, skriv 5. \n')
+                'For å se togruter, skriv 1. \nFor å bestille billett, skriv 2. \nFor å se bestillinger, skriv 3. \nFor å logge ut, skriv 4. \n')
         
         if valg == "1":
             se_togruter(stations)
             
         elif valg == "2":
-            se_ledige_plasser()
+            dato = input("Når skal du reise? (dd/mm/yy):\n")
+            start_stasjon = input("Fra hvilken stasjon vil du reise fra?:\n")
+            slutt_stasjon = input("Til hvilken stasjon skal du reise til?:\n")
+            
+            orderTickets(kundenummer, dato, start_stasjon, slutt_stasjon)
+            
         
 
 def se_togruter(stations):
@@ -76,10 +81,6 @@ def se_togruter(stations):
                 continue
             print(f"Togrute {togrute[0]}: går {togrute[1]} mot {togrute[2]}")
         print("")    
-        
-
-def se_ledige_plasser():
-    pass
 
 
 if __name__ == "__main__":
